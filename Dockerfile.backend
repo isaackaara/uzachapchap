@@ -1,0 +1,14 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY backend/package*.json ./
+RUN npm install --include=dev
+
+COPY backend/ ./
+RUN npm run build
+RUN cp -r src/db/migrations dist/db/migrations
+
+EXPOSE 3001
+
+CMD ["sh", "-c", "node dist/db/migrate.js && npm start"]
