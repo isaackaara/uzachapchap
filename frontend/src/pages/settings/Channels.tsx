@@ -1,15 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import apiClient from '../../api/client';
-
-interface Channel {
-  id: string;
-  platform: 'instagram' | 'whatsapp' | 'tiktok';
-  username: string | null;
-  connected_at: string | null;
-  expires_at: string | null;
-  is_active: boolean;
-  created_at: string;
-}
+import { useState, FormEvent } from 'react';
+import { useChannels, useMockConnect, useSyncChannel, useDisconnectChannel } from '../../hooks/useChannels';
+import { colors } from '../../theme';
+import { AxiosError } from 'axios';
 
 const PLATFORM_ICONS: Record<string, string> = {
   instagram: '📸',
@@ -27,85 +19,167 @@ function formatDate(dateStr: string | null): string {
 }
 
 export default function Channels() {
-  const queryClient = useQueryClient();
+  const [username, setUsername] = useState('');
+  const [showConnectForm, setShowConnectForm] = useState(false);
 
-  const { data: channels, isLoading } = useQuery<Channel[]>({
-    queryKey: ['channels'],
-    queryFn: async () => {
-      const res = await apiClient.get<Channel[]>('/channels');
-      return res.data;
-    },
-  });
+  const { data: channels, isLoading } = useChannels();
+  const { mutate: mockConnect, isPending: isConnecting, error: connectError } = useMockConnect();
+  const { mutate: syncChannel, isPending: isSyncing, variables: syncingId, data: syncResult } = useSyncChannel();
+  const { mutate: disconnect, isPending: isDisconnecting } = useDisconnectChannel();
 
-  const { mutate: disconnect, isPending: isDisconnecting } = useMutation({
-    mutationFn: async (id: string) => {
-      await apiClient.delete(`/channels/${id}`);
-      return id;
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['channels'] });
-    },
-  });
+  const connectErrorMsg =
+    connectError instanceof AxiosError
+      ? (connectError.response?.data as { error?: string })?.error ?? connectError.message
+      : null;
 
-  const handleConnectInstagram = () => {
-    const appId = import.meta.env['VITE_INSTAGRAM_APP_ID'] as string | undefined;
-    const redirectUri = encodeURIComponent(`${window.location.origin}/settings/channels`);
-    if (!appId) {
-      alert('Instagram App ID not configured. Set VITE_INSTAGRAM_APP_ID in .env');
-      return;
-    }
-    const oauthUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=instagram_basic,instagram_manage_messages,pages_read_engagement&response_type=code`;
-    window.location.href = oauthUrl;
+  const handleConnect = (e: FormEvent) => {
+    e.preventDefault();
+    if (!username.trim()) return;
+    mockConnect(username.trim(), {
+      onSuccess: () => {
+        setUsername('');
+        setShowConnectForm(false);
+      },
+    });
   };
+
+  const instagramChannels = channels?.filter((c) => c.platform === 'instagram') ?? [];
+  const hasInstagram = instagramChannels.length > 0;
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 700 }}>Channels</h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: 14 }}>
+          <h1 style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 700, color: colors.text }}>Channels</h1>
+          <p style={{ margin: 0, color: colors.textSecondary, fontSize: 14 }}>
             Manage your connected social channels
           </p>
         </div>
-        <button
-          onClick={handleConnectInstagram}
-          style={{
-            padding: '10px 20px',
-            background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            fontWeight: 700,
-            fontSize: 14,
-            cursor: 'pointer',
-          }}
-        >
-          📸 Connect Instagram
-        </button>
+        {!hasInstagram && !showConnectForm && (
+          <button
+            onClick={() => setShowConnectForm(true)}
+            style={{
+              padding: '10px 20px',
+              background: `linear-gradient(135deg, ${colors.primary}, #E6443C)`,
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 700,
+              fontSize: 14,
+              cursor: 'pointer',
+            }}
+          >
+            📸 Connect Instagram
+          </button>
+        )}
       </div>
 
+      {/* Connect Form */}
+      {showConnectForm && !hasInstagram && (
+        <div
+          style={{
+            background: colors.surface,
+            borderRadius: 12,
+            padding: 24,
+            border: `1px solid ${colors.border}`,
+            marginBottom: 24,
+          }}
+        >
+          <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: colors.text }}>
+            Connect Instagram Account
+          </h3>
+          <p style={{ margin: '0 0 16px', fontSize: 13, color: colors.textSecondary }}>
+            Enter your Instagram username to connect in mock mode. Your posts will be simulated with sample Kenyan thrift products.
+          </p>
+
+          {connectErrorMsg && (
+            <div style={{ background: colors.errorBg, color: colors.error, padding: '10px 14px', borderRadius: 8, marginBottom: 12, fontSize: 14 }}>
+              {connectErrorMsg}
+            </div>
+          )}
+
+          <form onSubmit={handleConnect} style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: colors.textSecondary, display: 'block', marginBottom: 6 }}>
+                Instagram Username
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="e.g. thrift_nairobi"
+                required
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  background: colors.bg,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: 8,
+                  fontSize: 14,
+                  color: colors.text,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isConnecting}
+              style={{
+                padding: '10px 20px',
+                background: colors.primary,
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: isConnecting ? 'not-allowed' : 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {isConnecting ? 'Connecting...' : 'Connect'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowConnectForm(false)}
+              style={{
+                padding: '10px 16px',
+                background: 'transparent',
+                border: `1px solid ${colors.border}`,
+                borderRadius: 8,
+                color: colors.textSecondary,
+                fontSize: 14,
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </form>
+        </div>
+      )}
+
       {isLoading ? (
-        <div style={{ color: '#94a3b8', fontSize: 14, padding: 24 }}>Loading channels...</div>
+        <div style={{ color: colors.textSecondary, fontSize: 14, padding: 24 }}>Loading channels...</div>
       ) : !channels?.length ? (
         <div
           style={{
-            background: '#fff',
+            background: colors.surface,
             borderRadius: 12,
             padding: '60px 24px',
             textAlign: 'center',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+            border: `1px solid ${colors.border}`,
           }}
         >
           <div style={{ fontSize: 48, marginBottom: 16 }}>📡</div>
-          <h3 style={{ margin: '0 0 8px', fontSize: 18, color: '#1e293b' }}>No channels connected</h3>
-          <p style={{ margin: '0 0 24px', color: '#64748b', fontSize: 14 }}>
+          <h3 style={{ margin: '0 0 8px', fontSize: 18, color: colors.text }}>No channels connected</h3>
+          <p style={{ margin: '0 0 24px', color: colors.textSecondary, fontSize: 14 }}>
             Connect your Instagram account to start managing your sales
           </p>
           <button
-            onClick={handleConnectInstagram}
+            onClick={() => setShowConnectForm(true)}
             style={{
               padding: '12px 24px',
-              background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
+              background: `linear-gradient(135deg, ${colors.primary}, #E6443C)`,
               color: '#fff',
               border: 'none',
               borderRadius: 8,
@@ -123,10 +197,10 @@ export default function Channels() {
             <div
               key={channel.id}
               style={{
-                background: '#fff',
+                background: colors.surface,
                 borderRadius: 12,
                 padding: '20px 24px',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                border: `1px solid ${colors.border}`,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 16,
@@ -138,7 +212,7 @@ export default function Channels() {
 
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontWeight: 700, fontSize: 16, textTransform: 'capitalize' }}>
+                  <span style={{ fontWeight: 700, fontSize: 16, textTransform: 'capitalize', color: colors.text }}>
                     {channel.platform}
                   </span>
                   <span
@@ -147,41 +221,66 @@ export default function Channels() {
                       borderRadius: 12,
                       fontSize: 11,
                       fontWeight: 700,
-                      background: channel.is_active ? '#dcfce7' : '#fee2e2',
-                      color: channel.is_active ? '#15803d' : '#dc2626',
+                      background: channel.is_active ? colors.successBg : colors.errorBg,
+                      color: channel.is_active ? colors.success : colors.error,
                     }}
                   >
                     {channel.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                <div style={{ fontSize: 14, color: '#64748b' }}>
+                <div style={{ fontSize: 14, color: colors.textSecondary }}>
                   {channel.username ? `@${channel.username}` : 'Unknown handle'}
                   {' · '}
                   Connected {formatDate(channel.connected_at)}
                 </div>
+                {/* Sync result */}
+                {syncResult && syncingId === channel.id && (
+                  <div style={{ fontSize: 13, color: colors.success, marginTop: 4 }}>
+                    {syncResult.message}
+                  </div>
+                )}
               </div>
 
-              <button
-                onClick={() => {
-                  if (confirm(`Disconnect ${channel.platform}? This cannot be undone.`)) {
-                    disconnect(channel.id);
-                  }
-                }}
-                disabled={isDisconnecting}
-                style={{
-                  padding: '8px 16px',
-                  background: 'transparent',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: 8,
-                  color: '#dc2626',
-                  fontWeight: 600,
-                  fontSize: 13,
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                }}
-              >
-                Disconnect
-              </button>
+              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                {channel.platform === 'instagram' && (
+                  <button
+                    onClick={() => syncChannel(channel.id)}
+                    disabled={isSyncing}
+                    style={{
+                      padding: '8px 16px',
+                      background: colors.secondary,
+                      border: 'none',
+                      borderRadius: 8,
+                      color: '#0F1419',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      cursor: isSyncing ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {isSyncing && syncingId === channel.id ? 'Syncing...' : 'Sync Posts'}
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    if (confirm(`Disconnect ${channel.platform}? This cannot be undone.`)) {
+                      disconnect(channel.id);
+                    }
+                  }}
+                  disabled={isDisconnecting}
+                  style={{
+                    padding: '8px 16px',
+                    background: 'transparent',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: 8,
+                    color: colors.error,
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Disconnect
+                </button>
+              </div>
             </div>
           ))}
         </div>

@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useResetPassword } from '../../hooks/useAuth';
 import { AxiosError } from 'axios';
+import { colors } from '../../theme';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -65,7 +66,7 @@ export default function ResetPassword() {
 
         {isSuccess ? (
           <div style={styles.successBox}>
-            ✅ Password updated! Redirecting to login...
+            Password updated! Redirecting to login...
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={styles.form}>
@@ -110,49 +111,51 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#f8f9fa',
+    background: colors.bg,
     padding: 16,
   },
   card: {
-    background: '#fff',
+    background: colors.surface,
     borderRadius: 16,
     padding: '40px 36px',
     width: '100%',
     maxWidth: 420,
-    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+    border: `1px solid ${colors.border}`,
   },
-  logo: { fontSize: 22, fontWeight: 800, color: '#4F46E5', marginBottom: 24, textAlign: 'center' },
-  title: { margin: '0 0 8px', fontSize: 24, fontWeight: 700, textAlign: 'center' },
-  subtitle: { margin: '0 0 24px', color: '#64748b', textAlign: 'center', fontSize: 14 },
+  logo: { fontSize: 22, fontWeight: 800, color: colors.primary, marginBottom: 24, textAlign: 'center' },
+  title: { margin: '0 0 8px', fontSize: 24, fontWeight: 700, textAlign: 'center', color: colors.text },
+  subtitle: { margin: '0 0 24px', color: colors.textSecondary, textAlign: 'center', fontSize: 14 },
   errorBox: {
-    background: '#fee2e2',
-    color: '#dc2626',
+    background: colors.errorBg,
+    color: colors.error,
     borderRadius: 8,
     padding: '10px 14px',
     marginBottom: 16,
     fontSize: 14,
   },
   successBox: {
-    background: '#dcfce7',
-    color: '#15803d',
+    background: colors.successBg,
+    color: colors.success,
     borderRadius: 8,
     padding: '14px',
     marginBottom: 16,
     fontSize: 14,
   },
   form: { display: 'flex', flexDirection: 'column' },
-  label: { fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 },
+  label: { fontSize: 13, fontWeight: 600, color: colors.textSecondary, marginBottom: 6 },
   input: {
     padding: '10px 12px',
-    border: '1px solid #d1d5db',
+    border: `1px solid ${colors.border}`,
     borderRadius: 8,
     fontSize: 14,
     marginBottom: 16,
     outline: 'none',
+    background: colors.bg,
+    color: colors.text,
   },
   button: {
     padding: '12px',
-    background: '#4F46E5',
+    background: colors.primary,
     color: '#fff',
     border: 'none',
     borderRadius: 8,
@@ -161,6 +164,6 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     marginBottom: 16,
   },
-  footer: { textAlign: 'center', fontSize: 14, color: '#64748b', margin: 0 },
-  link: { color: '#4F46E5', textDecoration: 'none', fontWeight: 600 },
+  footer: { textAlign: 'center', fontSize: 14, color: colors.textSecondary, margin: 0 },
+  link: { color: colors.primary, textDecoration: 'none', fontWeight: 600 },
 };

@@ -1,5 +1,5 @@
 import { query } from '../db';
-import { sendDM, updateCaption } from './instagram.service';
+import { sendDM, updateCaption, IS_MOCK_MODE } from './instagram.service';
 
 interface JobRow {
   id: string;
@@ -56,6 +56,12 @@ export async function processJobs(): Promise<void> {
 async function handleJob(job: JobRow): Promise<void> {
   const p = job.payload;
 
+  if (IS_MOCK_MODE) {
+    // In mock mode, log and mark as done
+    console.log(`[MOCK JOB] Processing ${job.type}:`, JSON.stringify(p).substring(0, 100));
+    return;
+  }
+
   switch (job.type) {
     case 'update_ig_caption': {
       const postId = p['postId'] as string;
@@ -82,5 +88,5 @@ export function startJobWorker(): void {
       console.error('Job worker error:', err);
     });
   }, 30000);
-  console.log('Job worker started (interval: 30s)');
+  console.log(`Job worker started (interval: 30s, mock: ${IS_MOCK_MODE})`);
 }

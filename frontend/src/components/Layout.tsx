@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
 import apiClient from '../api/client';
+import { colors } from '../theme';
 
 const navItems = [
   { label: 'Dashboard', path: '/dashboard', icon: '📊' },
@@ -26,17 +27,18 @@ export default function Layout() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', background: colors.bg }}>
       {/* Sidebar */}
       <aside
         style={{
           width: 240,
-          background: '#1a1a2e',
-          color: '#fff',
+          background: colors.sidebar,
+          color: colors.text,
           display: 'flex',
           flexDirection: 'column',
           padding: '0',
           flexShrink: 0,
+          borderRight: `1px solid ${colors.border}`,
         }}
       >
         {/* Logo */}
@@ -45,8 +47,8 @@ export default function Layout() {
             padding: '24px 20px',
             fontSize: 20,
             fontWeight: 700,
-            color: '#6C63FF',
-            borderBottom: '1px solid #2d2d4e',
+            color: colors.primary,
+            borderBottom: `1px solid ${colors.border}`,
           }}
         >
           ⚡ UzaChapChap
@@ -63,9 +65,9 @@ export default function Layout() {
                 alignItems: 'center',
                 gap: 12,
                 padding: '12px 20px',
-                color: isActive ? '#fff' : '#aaa',
-                background: isActive ? '#6C63FF22' : 'transparent',
-                borderLeft: isActive ? '3px solid #6C63FF' : '3px solid transparent',
+                color: isActive ? colors.text : colors.textSecondary,
+                background: isActive ? `${colors.primary}18` : 'transparent',
+                borderLeft: isActive ? `3px solid ${colors.primary}` : '3px solid transparent',
                 textDecoration: 'none',
                 fontSize: 15,
                 transition: 'all 0.15s',
@@ -81,20 +83,20 @@ export default function Layout() {
         <div
           style={{
             padding: '16px 20px',
-            borderTop: '1px solid #2d2d4e',
+            borderTop: `1px solid ${colors.border}`,
             fontSize: 13,
-            color: '#aaa',
+            color: colors.textSecondary,
           }}
         >
-          <div style={{ fontWeight: 600, color: '#fff', marginBottom: 4 }}>{seller?.name}</div>
+          <div style={{ fontWeight: 600, color: colors.text, marginBottom: 4 }}>{seller?.name}</div>
           <div style={{ marginBottom: 4 }}>{seller?.email}</div>
           <div
             style={{
               display: 'inline-block',
               padding: '2px 8px',
               borderRadius: 12,
-              background: seller?.plan === 'pro' ? '#6C63FF' : '#444',
-              color: '#fff',
+              background: seller?.plan === 'pro' ? colors.primary : colors.border,
+              color: colors.text,
               fontSize: 11,
               fontWeight: 600,
               textTransform: 'uppercase',
@@ -107,12 +109,12 @@ export default function Layout() {
       </aside>
 
       {/* Main area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#f8f9fa' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: colors.bg }}>
         {/* Header */}
         <header
           style={{
-            background: '#fff',
-            borderBottom: '1px solid #e0e0e0',
+            background: colors.header,
+            borderBottom: `1px solid ${colors.border}`,
             padding: '0 24px',
             height: 64,
             display: 'flex',
@@ -121,7 +123,7 @@ export default function Layout() {
             gap: 16,
           }}
         >
-          <span style={{ fontSize: 14, color: '#666' }}>
+          <span style={{ fontSize: 14, color: colors.textSecondary }}>
             {seller?.businessName ?? seller?.name}
           </span>
           <button
@@ -129,11 +131,11 @@ export default function Layout() {
             style={{
               padding: '8px 16px',
               background: 'transparent',
-              border: '1px solid #ddd',
+              border: `1px solid ${colors.border}`,
               borderRadius: 6,
               cursor: 'pointer',
               fontSize: 14,
-              color: '#666',
+              color: colors.textSecondary,
               transition: 'all 0.15s',
             }}
           >

@@ -1,4 +1,5 @@
 import { Product } from '../hooks/useProducts';
+import { colors } from '../theme';
 
 interface ProductCardProps {
   product: Product;
@@ -7,17 +8,17 @@ interface ProductCardProps {
 }
 
 const statusColors: Record<string, string> = {
-  available: '#22c55e',
-  sold: '#94a3b8',
-  reserved: '#f59e0b',
-  hidden: '#e2e8f0',
+  available: colors.success,
+  sold: colors.sold,
+  reserved: colors.warning,
+  hidden: colors.textMuted,
 };
 
 const statusBg: Record<string, string> = {
-  available: '#dcfce7',
-  sold: '#f1f5f9',
-  reserved: '#fef3c7',
-  hidden: '#f8fafc',
+  available: colors.successBg,
+  sold: colors.soldBg,
+  reserved: colors.warningBg,
+  hidden: 'rgba(90, 106, 128, 0.1)',
 };
 
 function formatKES(amount: number): string {
@@ -30,13 +31,13 @@ export default function ProductCard({ product, onMarkSold, isMarkingSold }: Prod
   return (
     <div
       style={{
-        background: '#fff',
+        background: colors.surface,
         borderRadius: 12,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+        border: `1px solid ${colors.border}`,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'box-shadow 0.2s',
+        transition: 'border-color 0.2s',
       }}
     >
       {/* Image */}
@@ -45,7 +46,7 @@ export default function ProductCard({ product, onMarkSold, isMarkingSold }: Prod
           width: '100%',
           paddingTop: '75%',
           position: 'relative',
-          background: '#f1f5f9',
+          background: colors.bg,
           flexShrink: 0,
         }}
       >
@@ -74,7 +75,7 @@ export default function ProductCard({ product, onMarkSold, isMarkingSold }: Prod
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 40,
-              color: '#cbd5e1',
+              color: colors.textMuted,
             }}
           >
             🛍️
@@ -92,8 +93,8 @@ export default function ProductCard({ product, onMarkSold, isMarkingSold }: Prod
             fontSize: 11,
             fontWeight: 700,
             textTransform: 'uppercase',
-            color: statusColors[product.status] ?? '#666',
-            background: statusBg[product.status] ?? '#f1f5f9',
+            color: statusColors[product.status] ?? colors.textMuted,
+            background: statusBg[product.status] ?? colors.soldBg,
           }}
         >
           {product.status}
@@ -107,7 +108,7 @@ export default function ProductCard({ product, onMarkSold, isMarkingSold }: Prod
             margin: 0,
             fontSize: 14,
             fontWeight: 600,
-            color: '#1e293b',
+            color: colors.text,
             lineHeight: 1.4,
             overflow: 'hidden',
             display: '-webkit-box',
@@ -118,7 +119,7 @@ export default function ProductCard({ product, onMarkSold, isMarkingSold }: Prod
           {product.title}
         </h3>
 
-        <div style={{ fontSize: 16, fontWeight: 700, color: '#4F46E5' }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: colors.primary }}>
           {formatKES(product.price)}
         </div>
 
@@ -128,8 +129,8 @@ export default function ProductCard({ product, onMarkSold, isMarkingSold }: Prod
           style={{
             marginTop: 'auto',
             padding: '10px',
-            background: product.status === 'available' ? '#4F46E5' : '#e2e8f0',
-            color: product.status === 'available' ? '#fff' : '#94a3b8',
+            background: product.status === 'available' ? colors.primary : colors.border,
+            color: product.status === 'available' ? '#fff' : colors.textMuted,
             border: 'none',
             borderRadius: 8,
             fontWeight: 700,

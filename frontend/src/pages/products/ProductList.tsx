@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useProducts, useMarkSold } from '../../hooks/useProducts';
 import ProductCard from '../../components/ProductCard';
+import { colors } from '../../theme';
 
 const STATUS_TABS = [
   { label: 'All', value: undefined },
@@ -27,15 +28,15 @@ export default function ProductList() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 700 }}>Products</h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: 14 }}>
+          <h1 style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 700, color: colors.text }}>Products</h1>
+          <p style={{ margin: 0, color: colors.textSecondary, fontSize: 14 }}>
             {data ? `${data.total} total products` : ''}
           </p>
         </div>
         <button
           style={{
             padding: '10px 20px',
-            background: '#4F46E5',
+            background: colors.primary,
             color: '#fff',
             border: 'none',
             borderRadius: 8,
@@ -50,7 +51,7 @@ export default function ProductList() {
       </div>
 
       {/* Status filter tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24, borderBottom: '1px solid #e2e8f0', paddingBottom: 0 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 24, borderBottom: `1px solid ${colors.border}`, paddingBottom: 0 }}>
         {STATUS_TABS.map((tab) => (
           <button
             key={String(tab.value)}
@@ -59,8 +60,8 @@ export default function ProductList() {
               padding: '8px 16px',
               background: 'none',
               border: 'none',
-              borderBottom: activeStatus === tab.value ? '2px solid #4F46E5' : '2px solid transparent',
-              color: activeStatus === tab.value ? '#4F46E5' : '#64748b',
+              borderBottom: activeStatus === tab.value ? `2px solid ${colors.primary}` : '2px solid transparent',
+              color: activeStatus === tab.value ? colors.primary : colors.textSecondary,
               fontWeight: activeStatus === tab.value ? 700 : 400,
               cursor: 'pointer',
               fontSize: 14,
@@ -73,7 +74,7 @@ export default function ProductList() {
       </div>
 
       {error && (
-        <div style={{ color: '#dc2626', marginBottom: 16, fontSize: 14 }}>
+        <div style={{ color: colors.error, marginBottom: 16, fontSize: 14 }}>
           Failed to load products.
         </div>
       )}
@@ -90,7 +91,8 @@ export default function ProductList() {
             <div
               key={i}
               style={{
-                background: '#e2e8f0',
+                background: colors.surface,
+                border: `1px solid ${colors.border}`,
                 borderRadius: 12,
                 height: 280,
                 animation: 'pulse 1.5s ease-in-out infinite',
@@ -103,12 +105,12 @@ export default function ProductList() {
           style={{
             textAlign: 'center',
             padding: '60px 0',
-            color: '#94a3b8',
+            color: colors.textSecondary,
           }}
         >
           <div style={{ fontSize: 48, marginBottom: 16 }}>🛍️</div>
-          <h3 style={{ margin: '0 0 8px', fontSize: 18 }}>No products yet</h3>
-          <p style={{ margin: 0, fontSize: 14 }}>Add your first product to get started</p>
+          <h3 style={{ margin: '0 0 8px', fontSize: 18, color: colors.textSecondary }}>No products yet</h3>
+          <p style={{ margin: 0, fontSize: 14, color: colors.textMuted }}>Add your first product to get started</p>
         </div>
       ) : (
         <>
@@ -140,7 +142,7 @@ export default function ProductList() {
               >
                 Previous
               </button>
-              <span style={{ padding: '8px 16px', fontSize: 14, color: '#64748b' }}>
+              <span style={{ padding: '8px 16px', fontSize: 14, color: colors.textSecondary }}>
                 {page} / {totalPages}
               </span>
               <button
@@ -161,8 +163,8 @@ export default function ProductList() {
 function paginationBtn(disabled: boolean): React.CSSProperties {
   return {
     padding: '8px 16px',
-    background: disabled ? '#f1f5f9' : '#4F46E5',
-    color: disabled ? '#94a3b8' : '#fff',
+    background: disabled ? colors.border : colors.primary,
+    color: disabled ? colors.textMuted : '#fff',
     border: 'none',
     borderRadius: 6,
     cursor: disabled ? 'not-allowed' : 'pointer',
